@@ -55,7 +55,8 @@ body {
 .page-content,
 .segmented,
 .mission-strip,
-.bottom-nav,
+.bottom-ribbon,
+.ribbon-tab,
 .segment,
 .tab {
   pointer-events: auto;
@@ -100,7 +101,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0));
 }
 
 .page-content--passthrough {
@@ -294,58 +295,58 @@ body {
   color: #fff;
 }
 
-.bottom-nav {
-  margin-top: auto;
-  margin-bottom: env(safe-area-inset-bottom, 0);
-  align-self: center;
-  width: min(430px, 96%);
-  height: 66px;
-  border-radius: 999px;
+.bottom-ribbon {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  width: 100vw;
+  height: calc(64px + env(safe-area-inset-bottom, 0));
+  border-radius: 0;
   border: none;
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(12, 18, 30, 0.46);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: center;
-  padding: 0 8px;
+  padding: 6px 6px env(safe-area-inset-bottom, 0);
 }
 
-.tab {
+.ribbon-tab {
   border: none;
   background: transparent;
-  color: rgba(100, 116, 139, 0.98);
+  color: rgba(255, 255, 255, 0.78);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 22px;
-  border-radius: 14px;
-  transition: background-color 160ms ease, box-shadow 160ms ease;
+  gap: 4px;
+  border-radius: 10px;
+  height: 52px;
 }
 
-.tab small {
+.ribbon-tab small {
   font-size: 11px;
   font-weight: 600;
 }
 
-.tab.active {
-  color: rgba(100, 116, 139, 0.98);
+.ribbon-tab.active {
+  color: rgba(71, 85, 105, 0.98);
 }
 
-.tab-icon {
-  width: 26px;
-  height: 26px;
+.ribbon-icon {
+  width: 24px;
+  height: 24px;
 }
 
-.tab-icon .app-icon-image {
-  filter: brightness(0) saturate(100%) invert(44%) sepia(11%) saturate(699%) hue-rotate(175deg) brightness(93%)
-    contrast(89%);
+.ribbon-icon .app-icon-image {
+  filter: brightness(0) invert(1);
 }
 
-.tab.active .tab-icon .app-icon-image {
-  filter: brightness(0) saturate(100%) invert(44%) sepia(11%) saturate(699%) hue-rotate(175deg) brightness(93%)
-    contrast(89%);
+.ribbon-tab.active .ribbon-icon .app-icon-image {
+  filter: brightness(0) saturate(100%) invert(31%) sepia(13%) saturate(658%) hue-rotate(176deg) brightness(94%)
+    contrast(91%);
 }
 
 .challenges-page {

@@ -1599,29 +1599,29 @@ export default function App() {
             </section>
           ) : null}
         </div>
-        <nav className="bottom-nav">
+        <nav className="bottom-ribbon">
           <button
             type="button"
-            className={currentPage === "Home" ? "tab active" : "tab"}
+            className={currentPage === "Home" ? "ribbon-tab active" : "ribbon-tab"}
             onClick={() => setCurrentPage("Home")}
           >
-            <AppIcon name="home" label="Home" fallback="🏠" className="tab-icon" />
+            <AppIcon name="home" label="Home" fallback="🏠" className="ribbon-icon" />
             <small>Home</small>
           </button>
           <button
             type="button"
-            className={currentPage === "Challenges" ? "tab active" : "tab"}
+            className={currentPage === "Challenges" ? "ribbon-tab active" : "ribbon-tab"}
             onClick={() => setCurrentPage("Challenges")}
           >
-            <AppIcon name="mission" label="Challenges" fallback="🏆" className="tab-icon" />
+            <AppIcon name="mission" label="Challenges" fallback="🏆" className="ribbon-icon" />
             <small>Challenges</small>
           </button>
           <button
             type="button"
-            className={currentPage === "Rewards" ? "tab active" : "tab"}
+            className={currentPage === "Rewards" ? "ribbon-tab active" : "ribbon-tab"}
             onClick={() => setCurrentPage("Rewards")}
           >
-            <AppIcon name="rewards" label="Rewards" fallback="🎁" className="tab-icon" />
+            <AppIcon name="rewards" label="Rewards" fallback="🎁" className="ribbon-icon" />
             <small>Rewards</small>
           </button>
         </nav>
