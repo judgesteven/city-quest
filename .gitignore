@@ -2,6 +2,11 @@
 
 # dependencies
 node_modules/
+package-lock 2.json
+
+# Duplicate / scratch copies (not part of the Vite app build)
+src/components 2/
+src/data 2/
 
 # Expo
 .expo/
