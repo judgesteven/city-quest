@@ -33,6 +33,13 @@ body {
   z-index: 0;
 }
 
+.challenge-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, #101726 0%, #0d111b 100%);
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -41,18 +48,50 @@ body {
   padding: 18px 18px 26px;
   pointer-events: none;
   z-index: 1200;
+  overflow: hidden;
 }
 
 .profile-card,
+.page-content,
 .segmented,
+.mission-strip,
 .bottom-nav,
 .segment,
 .tab {
   pointer-events: auto;
 }
 
-.profile-card {
+.powered-by {
+  margin: 0 auto 6px;
   margin-top: env(safe-area-inset-top, 0);
+  width: min(430px, 96%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.page-content--passthrough {
+  pointer-events: none;
+  overflow: visible;
+}
+
+.profile-card {
+  margin-top: 0;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -73,6 +112,13 @@ body {
   justify-content: center;
   font-size: 34px;
   flex-shrink: 0;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar-wrap {
@@ -123,6 +169,21 @@ body {
   font-weight: 500;
 }
 
+.profile-hint,
+.profile-error {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.profile-hint {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-error {
+  color: #ff9b9b;
+}
+
 .stats {
   display: flex;
   flex-direction: row;
@@ -131,7 +192,7 @@ body {
 }
 
 .stat-badge {
-  min-width: 52px;
+  width: 52px;
   height: 52px;
   border-radius: 12px;
   padding: 6px 8px;
@@ -216,7 +277,7 @@ body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
   padding: 0 8px;
 }
@@ -241,6 +302,367 @@ body {
   color: #46c8ff;
 }
 
+.challenges-page {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  align-self: stretch;
+  padding-bottom: 4px;
+}
+
+.challenge-section {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.72);
+  padding: 12px;
+}
+
+.challenge-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.challenge-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.challenge-target-icon {
+  color: #5cb6ff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.challenge-section-title h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.challenge-countdown {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.challenge-empty {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.challenge-card {
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.challenge-card-image-wrap {
+  position: relative;
+}
+
+.challenge-category-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.challenge-card-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.challenge-card-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+}
+
+.challenge-card-badges {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.challenge-badge {
+  min-width: 72px;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  padding: 8px 10px;
+}
+
+.challenge-badge strong {
+  display: block;
+  line-height: 1;
+  font-size: 24px;
+}
+
+.challenge-badge span {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.challenge-badge.xp strong {
+  color: #ff9e45;
+}
+
+.challenge-badge.gems strong {
+  color: #2ac3ff;
+}
+
+.challenge-card-body {
+  padding: 10px 12px 12px;
+}
+
+.challenge-card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.challenge-card-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.reward-stock {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.reward-cta {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #8e49ff;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reward-cta.actionable {
+  background: #25b45a;
+}
+
+.reward-cta:disabled {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.challenge-card.redeemed {
+  background: rgba(123, 76, 255, 0.1);
+}
+
+.challenge-card-timer {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.76);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.challenges-error {
+  margin: 0;
+  font-size: 12px;
+  color: #ff9b9b;
+}
+
+.test-challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-challenge-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #ffffff 10%, transparent);
+}
+
+.test-challenge-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.test-challenge-thumb.test-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.test-challenge-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.test-challenge-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.test-challenge-time-pill {
+  margin: 6px 0 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.test-challenge-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.test-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.test-mini-badge.xp {
+  color: #ffb16e;
+  background: rgba(255, 158, 69, 0.16);
+  border: 1px solid rgba(255, 158, 69, 0.45);
+}
+
+.test-mini-badge.gems {
+  color: #7fe0ff;
+  background: rgba(42, 195, 255, 0.16);
+  border: 1px solid rgba(42, 195, 255, 0.45);
+}
+
+.test-challenge-chevron {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mission-strip {
+  margin-top: 10px;
+  align-self: center;
+  width: min(430px, 96%);
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.mission-strip-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.mission-strip-meta {
+  margin-top: 2px;
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.mission-strip-error {
+  color: #ff9b9b;
+}
+
+.mission-pin-wrapper {
+  background: transparent;
+}
+
+.mission-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(0, 0, 0, 0.75);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  font-size: 16px;
+}
+
+.mission-pin.viewable {
+  background: rgba(255, 148, 58, 0.9);
+}
+
+.mission-pin.actionable {
+  background: rgba(70, 200, 255, 0.95);
+  animation: mission-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes mission-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(70, 200, 255, 0.45);
+  }
+  70% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 10px rgba(70, 200, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(70, 200, 255, 0);
+  }
+}
+
 .poi-icon-wrapper {
   background: transparent;
 }
@@ -261,6 +683,179 @@ body {
 
 .leaflet-container {
   background: #151b2a;
+}
+
+.mission-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mission-modal {
+  width: min(360px, 95vw);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #121722;
+  padding: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+.mission-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+}
+
+.mission-modal-image {
+  width: 100%;
+  height: 150px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mission-modal-image-wrap {
+  position: relative;
+}
+
+.mission-modal-image-badges {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mission-modal-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+}
+
+.mission-modal h3 {
+  margin: 12px 0 6px;
+  font-size: 20px;
+}
+
+.mission-modal-description {
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.mission-modal-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.mission-mini-badge {
+  min-width: 72px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.62);
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mission-mini-badge strong {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.mission-mini-badge span {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.mission-mini-badge.xp strong {
+  color: #ff9e45;
+}
+
+.mission-mini-badge.gems strong {
+  color: #2ac3ff;
+}
+
+.mission-modal-warning,
+.mission-modal-loading,
+.mission-modal-success,
+.mission-modal-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.mission-modal-warning {
+  color: #ffcf6b;
+}
+
+.mission-modal-loading {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mission-modal-success {
+  color: #7ceca8;
+}
+
+.mission-modal-error {
+  color: #ff9b9b;
+}
+
+.mission-range-pill {
+  margin: 8px 0 0;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mission-range-pill.in-range {
+  background: rgba(65, 208, 117, 0.16);
+  color: #79f0a7;
+  border: 1px solid rgba(65, 208, 117, 0.4);
+}
+
+.mission-range-pill.get-closer {
+  background: rgba(255, 207, 107, 0.16);
+  color: #ffcf6b;
+  border: 1px solid rgba(255, 207, 107, 0.4);
+}
+
+.mission-checkin-btn {
+  margin-top: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #ff8b38;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mission-checkin-btn.actionable {
+  background: #25b45a;
+}
+
+.mission-checkin-btn:disabled {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 @media (max-width: 420px) {
