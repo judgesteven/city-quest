@@ -14,6 +14,5 @@
     "strict": true,
     "types": ["vite/client"]
   },
-  "include": ["src"],
-  "exclude": ["src/components 2", "src/data 2", "src/pages"]
+  "include": ["src"]
 }

@@ -25,9 +25,9 @@ npm run preview
 
 ## Mobile Testing
 
-1. Start dev server with `npm run dev -- --host`.
-2. Open the shown network URL from your phone.
-3. Tap **Test Mobile Location** to verify browser geolocation permission works.
+1. Start the dev server with `npm run dev` (it listens on `0.0.0.0`).
+2. Open the **network URL** shown in the terminal from your phone on the same Wi-Fi.
+3. Allow location when the browser prompts; the map should follow your position.
 
 ## Stack
 

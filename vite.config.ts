@@ -6,16 +6,12 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5174,
-    allowedHosts: [
-      ".trycloudflare.com",
-      "davidson-hurricane-winter-floral.trycloudflare.com",
-    ],
   },
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico"],
+      includeAssets: ["favicon.png", "assets/icon.png", "assets/adaptive-icon.png"],
       manifest: {
         name: "City Quest",
         short_name: "CityQuest",
