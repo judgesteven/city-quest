@@ -80,6 +80,7 @@ type IconName = "home" | "mission" | "rewards" | "zap" | "gem";
 
 const DEFAULT_CENTER: Coords = { latitude: 31.2001, longitude: 29.9187 };
 const GAME_LAYER_BASE_URL = "https://api.dev.gamelayer.co/api/v0";
+const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ICON_PATHS: Record<IconName, string> = {
   home: "/assets/home.png",
   mission: "/assets/mission.png",
@@ -923,8 +924,8 @@ export default function App() {
       attributionControl: false,
     }).setView([DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude], 15);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      subdomains: "abcd",
+    L.tileLayer(OSM_TILE_URL, {
+      subdomains: "abc",
       maxZoom: 19,
     }).addTo(map);
 
@@ -943,6 +944,29 @@ export default function App() {
       missionLayerRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !userCoords || hasCenteredOnUserRef.current) {
+      return;
+    }
+
+    const target: [number, number] = [userCoords.latitude, userCoords.longitude];
+    map.setView(target, Math.max(map.getZoom(), 16), { animate: false });
+    hasCenteredOnUserRef.current = true;
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLatLng(target);
+    } else {
+      userMarkerRef.current = L.circleMarker(target, {
+        radius: 10,
+        color: "#ffffff",
+        weight: 3,
+        fillColor: "#2aa4ff",
+        fillOpacity: 1,
+      }).addTo(map);
+    }
+  }, [userCoords]);
 
   useEffect(() => {
     if (!window.isSecureContext || !("geolocation" in navigator)) {
