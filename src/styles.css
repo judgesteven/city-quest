@@ -61,6 +61,24 @@ body {
   pointer-events: auto;
 }
 
+.app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.app-icon-fallback {
+  display: inline-block;
+  line-height: 1;
+}
+
 .powered-by {
   margin: 0 auto 6px;
   margin-top: env(safe-area-inset-top, 0);
@@ -226,8 +244,19 @@ body {
   color: #2ac3ff;
 }
 
+.stat-badge.xp .stat-meta {
+  color: #ff9e45;
+}
+
+.stat-badge.gems .stat-meta {
+  color: #2ac3ff;
+}
+
 .stat-meta {
   margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 9px;
   line-height: 1;
   font-weight: 600;
@@ -289,7 +318,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   font-size: 22px;
 }
 
@@ -300,6 +329,20 @@ body {
 
 .tab.active {
   color: #46c8ff;
+}
+
+.tab-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.tab-icon .app-icon-image {
+  filter: brightness(0) invert(1);
+}
+
+.tab.active .tab-icon .app-icon-image {
+  filter: brightness(0) saturate(100%) invert(73%) sepia(43%) saturate(2106%) hue-rotate(163deg) brightness(101%)
+    contrast(102%);
 }
 
 .challenges-page {
@@ -333,9 +376,8 @@ body {
 }
 
 .challenge-target-icon {
-  color: #5cb6ff;
-  font-size: 16px;
-  font-weight: 700;
+  width: 16px;
+  height: 16px;
 }
 
 .challenge-section-title h3 {
@@ -427,16 +469,67 @@ body {
 }
 
 .challenge-badge span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   color: #fff;
   font-weight: 700;
+}
+
+.inline-badge-icon {
+  width: 12px;
+  height: 12px;
+  position: relative;
+}
+
+.inline-badge-icon .app-icon-image {
+  display: none;
+}
+
+.inline-badge-icon::before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: currentColor;
+}
+
+.inline-badge-icon.app-icon--zap::before {
+  -webkit-mask-image: url("/assets/zap.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: url("/assets/zap.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.inline-badge-icon.app-icon--gem::before {
+  -webkit-mask-image: url("/assets/gem.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: url("/assets/gem.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
 }
 
 .challenge-badge.xp strong {
   color: #ff9e45;
 }
 
+.challenge-badge.xp span {
+  color: #ff9e45;
+}
+
 .challenge-badge.gems strong {
+  color: #2ac3ff;
+}
+
+.challenge-badge.gems span {
   color: #2ac3ff;
 }
 
@@ -571,6 +664,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   width: 88px;
   border-radius: 8px;
   padding: 5px 8px;
@@ -625,41 +719,49 @@ body {
 
 .mission-pin-wrapper {
   background: transparent;
+  overflow: visible !important;
 }
 
 .mission-pin {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  border-radius: 999px;
+  position: relative;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(0, 0, 0, 0.75);
+  border: 2px solid rgba(0, 0, 0, 0.5);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   font-size: 16px;
 }
 
+.mission-pin-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
 .mission-pin.viewable {
-  background: rgba(255, 148, 58, 0.9);
+  background: #ff4db8;
 }
 
 .mission-pin.actionable {
-  background: rgba(70, 200, 255, 0.95);
+  background: #ff4db8;
   animation: mission-pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes mission-pulse {
   0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(70, 200, 255, 0.45);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 77, 184, 0.6);
   }
   70% {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 10px rgba(70, 200, 255, 0);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 12px rgba(255, 77, 184, 0);
   }
   100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(70, 200, 255, 0);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 77, 184, 0);
   }
 }
 
@@ -779,6 +881,9 @@ body {
 }
 
 .mission-mini-badge span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   color: #fff;
   font-weight: 700;
@@ -788,7 +893,15 @@ body {
   color: #ff9e45;
 }
 
+.mission-mini-badge.xp span {
+  color: #ff9e45;
+}
+
 .mission-mini-badge.gems strong {
+  color: #2ac3ff;
+}
+
+.mission-mini-badge.gems span {
   color: #2ac3ff;
 }
 

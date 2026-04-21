@@ -76,9 +76,17 @@ type PrizeAnnotation = {
   distanceMetres: number;
   isActionable: boolean;
 };
+type IconName = "home" | "mission" | "rewards" | "zap" | "gem";
 
 const DEFAULT_CENTER: Coords = { latitude: 31.2001, longitude: 29.9187 };
 const GAME_LAYER_BASE_URL = "https://api.dev.gamelayer.co/api/v0";
+const ICON_PATHS: Record<IconName, string> = {
+  home: "/assets/home.png",
+  mission: "/assets/mission.png",
+  rewards: "/assets/rewards.png",
+  zap: "/assets/zap.png",
+  gem: "/assets/gem.png",
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -324,6 +332,35 @@ const missionCountdown = (mission: GameLayerMission, now: Date) => {
   return "--:--:--";
 };
 
+function AppIcon({
+  name,
+  label,
+  fallback,
+  className,
+}: {
+  name: IconName;
+  label: string;
+  fallback: string;
+  className?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+  return (
+    <span className={className ? `app-icon app-icon--${name} ${className}` : `app-icon app-icon--${name}`} aria-label={label}>
+      {!hasError ? (
+        <img
+          src={ICON_PATHS[name]}
+          alt=""
+          aria-hidden="true"
+          className="app-icon-image"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <span className="app-icon-fallback">{fallback}</span>
+      )}
+    </span>
+  );
+}
+
 function ChallengeSection({
   title,
   missions,
@@ -339,7 +376,7 @@ function ChallengeSection({
     <section className="challenge-section">
       <header className="challenge-section-header">
         <div className="challenge-section-title">
-          <span className="challenge-target-icon">◎</span>
+          <AppIcon name="mission" label="Mission" fallback="◎" className="challenge-target-icon" />
           <h3>{title}</h3>
         </div>
       </header>
@@ -367,11 +404,15 @@ function ChallengeSection({
                   <div className="challenge-card-badges">
                     <div className="challenge-badge xp">
                       <strong>{xp}</strong>
-                      <span>XP</span>
+                      <span>
+                        <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
+                      </span>
                     </div>
                     <div className="challenge-badge gems">
                       <strong>{gems}</strong>
-                      <span>Gems</span>
+                      <span>
+                        <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -401,7 +442,7 @@ function TestChallengeSection({
     <section className="challenge-section">
       <header className="challenge-section-header">
         <div className="challenge-section-title">
-          <span className="challenge-target-icon">🧪</span>
+          <AppIcon name="mission" label="Mission" fallback="🧪" className="challenge-target-icon" />
           <h3>Test Challenges</h3>
         </div>
       </header>
@@ -427,8 +468,14 @@ function TestChallengeSection({
               </div>
 
               <div className="test-challenge-badges">
-                <span className="test-mini-badge xp">{xp} XP</span>
-                <span className="test-mini-badge gems">{gems > 0 ? `-${gems}` : gems} Gems</span>
+                <span className="test-mini-badge xp">
+                  <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" />
+                  {xp} XP
+                </span>
+                <span className="test-mini-badge gems">
+                  <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" />
+                  {gems > 0 ? `-${gems}` : gems} Gems
+                </span>
               </div>
 
               <span className="test-challenge-chevron">›</span>
@@ -482,7 +529,7 @@ function RewardsSection({
       <section className="challenge-section">
         <header className="challenge-section-header">
           <div className="challenge-section-title">
-          <span className="challenge-target-icon">🎁</span>
+            <AppIcon name="rewards" label="Rewards" fallback="🎁" className="challenge-target-icon" />
             <h3>Available Rewards</h3>
           </div>
         </header>
@@ -508,7 +555,9 @@ function RewardsSection({
                     <div className="challenge-card-badges">
                       <div className="challenge-badge gems">
                         <strong>{gems > 0 ? `-${gems}` : gems}</strong>
-                        <span>Gems</span>
+                        <span>
+                          <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -537,7 +586,7 @@ function RewardsSection({
       <section className="challenge-section">
         <header className="challenge-section-header">
           <div className="challenge-section-title">
-            <span className="challenge-target-icon">🧾</span>
+            <AppIcon name="rewards" label="Rewards" fallback="🧾" className="challenge-target-icon" />
             <h3>My Rewards</h3>
           </div>
         </header>
@@ -586,7 +635,7 @@ function TestRewardsSection({
     <section className="challenge-section">
       <header className="challenge-section-header">
         <div className="challenge-section-title">
-          <span className="challenge-target-icon">🧪</span>
+          <AppIcon name="rewards" label="Rewards" fallback="🧪" className="challenge-target-icon" />
           <h3>Test Rewards</h3>
         </div>
       </header>
@@ -612,8 +661,14 @@ function TestRewardsSection({
               </div>
 
               <div className="test-challenge-badges">
-                <span className="test-mini-badge xp">{xp} XP</span>
-                <span className="test-mini-badge gems">{gems > 0 ? `-${gems}` : gems} Gems</span>
+                <span className="test-mini-badge xp">
+                  <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" />
+                  {xp} XP
+                </span>
+                <span className="test-mini-badge gems">
+                  <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" />
+                  {gems > 0 ? `-${gems}` : gems} Gems
+                </span>
               </div>
 
               <span className="test-challenge-chevron">›</span>
@@ -629,7 +684,11 @@ export default function App() {
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.CircleMarker | null>(null);
+  const hasCenteredOnUserRef = useRef(false);
   const missionLayerRef = useRef<L.LayerGroup | null>(null);
+  const mapMarkersRef = useRef<Map<string, L.Marker>>(new Map());
+  const mapMarkerClassRef = useRef<Map<string, "actionable" | "viewable">>(new Map());
+  const mapMarkerModeRef = useRef<"Challenges" | "Rewards" | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const lastLocationFetchRef = useRef<number>(0);
   const checkInCloseTimerRef = useRef<number | null>(null);
@@ -898,7 +957,10 @@ export default function App() {
 
       const target: [number, number] = [coords.latitude, coords.longitude];
       setUserCoords(coords);
-      map.setView(target, Math.max(map.getZoom(), 16), { animate: true });
+      if (!hasCenteredOnUserRef.current) {
+        map.setView(target, Math.max(map.getZoom(), 16), { animate: false });
+        hasCenteredOnUserRef.current = true;
+      }
 
       if (userMarkerRef.current) {
         userMarkerRef.current.setLatLng(target);
@@ -925,7 +987,6 @@ export default function App() {
           return;
         }
         const fallback: [number, number] = [DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude];
-        map.setView(fallback, Math.max(map.getZoom(), 16), { animate: true });
         userMarkerRef.current = L.circleMarker(fallback, {
           radius: 10,
           color: "#ffffff",
@@ -1012,51 +1073,126 @@ export default function App() {
     const map = mapRef.current;
     const missionLayer = missionLayerRef.current;
     if (!map || !missionLayer) return;
+    const clearAllMarkers = () => {
+      mapMarkersRef.current.forEach((marker) => {
+        missionLayer.removeLayer(marker);
+      });
+      mapMarkersRef.current.clear();
+      mapMarkerClassRef.current.clear();
+    };
 
-    missionLayer.clearLayers();
     if (currentPage !== "Home") {
+      clearAllMarkers();
+      mapMarkerModeRef.current = null;
       return;
+    }
+
+    if (mapMarkerModeRef.current !== homeMapMode) {
+      clearAllMarkers();
+      mapMarkerModeRef.current = homeMapMode;
     }
 
     if (homeMapMode === "Challenges") {
+      const visibleIds = new Set<string>();
       locationAnnotations.forEach((annotation) => {
-        const marker = L.marker([annotation.lat, annotation.lon], {
-          icon: L.divIcon({
-            className: "mission-pin-wrapper",
-            html: `<div class="mission-pin ${annotation.isActionable ? "actionable" : "viewable"}">🎯</div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-          }),
-        });
+        const markerId = annotation.mission.id;
+        const markerClass: "actionable" | "viewable" = annotation.isActionable ? "actionable" : "viewable";
+        visibleIds.add(markerId);
 
-        marker.on("click", () => {
-          setSelectedMission(annotation);
-          setSelectedMissionDetail(annotation.mission);
-          setCheckInError(null);
-          setCheckInMessage(null);
-        });
+        const existing = mapMarkersRef.current.get(markerId);
+        if (!existing) {
+          const marker = L.marker([annotation.lat, annotation.lon], {
+            icon: L.divIcon({
+              className: "mission-pin-wrapper",
+              html: `<div class="mission-pin ${markerClass}"><img src="/assets/mission.png" alt="" class="mission-pin-icon" /></div>`,
+              iconSize: [35, 35],
+              iconAnchor: [18, 18],
+            }),
+          });
+          marker.on("click", () => {
+            setSelectedMission(annotation);
+            setSelectedMissionDetail(annotation.mission);
+            setCheckInError(null);
+            setCheckInMessage(null);
+          });
+          marker.addTo(missionLayer);
+          mapMarkersRef.current.set(markerId, marker);
+          mapMarkerClassRef.current.set(markerId, markerClass);
+          return;
+        }
 
-        marker.addTo(missionLayer);
+        existing.setLatLng([annotation.lat, annotation.lon]);
+        if (mapMarkerClassRef.current.get(markerId) !== markerClass) {
+          existing.setIcon(
+            L.divIcon({
+              className: "mission-pin-wrapper",
+              html: `<div class="mission-pin ${markerClass}"><img src="/assets/mission.png" alt="" class="mission-pin-icon" /></div>`,
+              iconSize: [35, 35],
+              iconAnchor: [18, 18],
+            })
+          );
+          mapMarkerClassRef.current.set(markerId, markerClass);
+        }
+      });
+
+      mapMarkersRef.current.forEach((marker, markerId) => {
+        if (!visibleIds.has(markerId)) {
+          missionLayer.removeLayer(marker);
+          mapMarkersRef.current.delete(markerId);
+          mapMarkerClassRef.current.delete(markerId);
+        }
       });
       return;
     }
 
+    const visibleIds = new Set<string>();
     rewardAnnotations.forEach((annotation) => {
-      const marker = L.marker([annotation.lat, annotation.lon], {
-        icon: L.divIcon({
-          className: "mission-pin-wrapper",
-          html: `<div class="mission-pin ${annotation.isActionable ? "actionable" : "viewable"}">🎁</div>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-        }),
-      });
-      marker.on("click", () => {
-        setSelectedReward(annotation);
-        setSelectedRewardDetail(annotation.prize);
-        setRewardError(null);
-        setRewardMessage(null);
-      });
-      marker.addTo(missionLayer);
+      const markerId = annotation.prize.id;
+      const markerClass: "actionable" | "viewable" = annotation.isActionable ? "actionable" : "viewable";
+      visibleIds.add(markerId);
+
+      const existing = mapMarkersRef.current.get(markerId);
+      if (!existing) {
+        const marker = L.marker([annotation.lat, annotation.lon], {
+          icon: L.divIcon({
+            className: "mission-pin-wrapper",
+            html: `<div class="mission-pin ${markerClass}"><img src="/assets/rewards.png" alt="" class="mission-pin-icon" /></div>`,
+            iconSize: [35, 35],
+            iconAnchor: [18, 18],
+          }),
+        });
+        marker.on("click", () => {
+          setSelectedReward(annotation);
+          setSelectedRewardDetail(annotation.prize);
+          setRewardError(null);
+          setRewardMessage(null);
+        });
+        marker.addTo(missionLayer);
+        mapMarkersRef.current.set(markerId, marker);
+        mapMarkerClassRef.current.set(markerId, markerClass);
+        return;
+      }
+
+      existing.setLatLng([annotation.lat, annotation.lon]);
+      if (mapMarkerClassRef.current.get(markerId) !== markerClass) {
+        existing.setIcon(
+          L.divIcon({
+            className: "mission-pin-wrapper",
+            html: `<div class="mission-pin ${markerClass}"><img src="/assets/rewards.png" alt="" class="mission-pin-icon" /></div>`,
+            iconSize: [35, 35],
+            iconAnchor: [18, 18],
+          })
+        );
+        mapMarkerClassRef.current.set(markerId, markerClass);
+      }
+    });
+
+    mapMarkersRef.current.forEach((marker, markerId) => {
+      if (!visibleIds.has(markerId)) {
+        missionLayer.removeLayer(marker);
+        mapMarkersRef.current.delete(markerId);
+        mapMarkerClassRef.current.delete(markerId);
+      }
     });
   }, [currentPage, homeMapMode, locationAnnotations, rewardAnnotations]);
 
@@ -1374,11 +1510,15 @@ export default function App() {
           <div className="stats">
             <div className="stat-badge xp">
               <span className="stat-value">{displayPoints}</span>
-              <span className="stat-meta">⚡ XP</span>
+              <span className="stat-meta">
+                <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
+              </span>
             </div>
             <div className="stat-badge gems">
               <span className="stat-value">{displayGems}</span>
-              <span className="stat-meta">💎 Gems</span>
+              <span className="stat-meta">
+                <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+              </span>
             </div>
           </div>
         </header>
@@ -1441,7 +1581,7 @@ export default function App() {
             className={currentPage === "Home" ? "tab active" : "tab"}
             onClick={() => setCurrentPage("Home")}
           >
-            <span>🏠</span>
+            <AppIcon name="home" label="Home" fallback="🏠" className="tab-icon" />
             <small>Home</small>
           </button>
           <button
@@ -1449,7 +1589,7 @@ export default function App() {
             className={currentPage === "Challenges" ? "tab active" : "tab"}
             onClick={() => setCurrentPage("Challenges")}
           >
-            <span>🏆</span>
+            <AppIcon name="mission" label="Challenges" fallback="🏆" className="tab-icon" />
             <small>Challenges</small>
           </button>
           <button
@@ -1457,7 +1597,7 @@ export default function App() {
             className={currentPage === "Rewards" ? "tab active" : "tab"}
             onClick={() => setCurrentPage("Rewards")}
           >
-            <span>🎁</span>
+            <AppIcon name="rewards" label="Rewards" fallback="🎁" className="tab-icon" />
             <small>Rewards</small>
           </button>
         </nav>
@@ -1479,11 +1619,15 @@ export default function App() {
                 <div className="mission-modal-image-badges">
                   <div className="mission-mini-badge xp">
                     <strong>{missionPoints}</strong>
-                    <span>XP</span>
+                    <span>
+                      <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
+                    </span>
                   </div>
                   <div className="mission-mini-badge gems">
                     <strong>{missionGems}</strong>
-                    <span>Gems</span>
+                    <span>
+                      <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1493,11 +1637,15 @@ export default function App() {
                 <div className="mission-modal-image-badges">
                   <div className="mission-mini-badge xp">
                     <strong>{missionPoints}</strong>
-                    <span>XP</span>
+                    <span>
+                      <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
+                    </span>
                   </div>
                   <div className="mission-mini-badge gems">
                     <strong>{missionGems}</strong>
-                    <span>Gems</span>
+                    <span>
+                      <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1554,7 +1702,9 @@ export default function App() {
                         return gemCost > 0 ? `-${gemCost}` : gemCost;
                       })()}
                     </strong>
-                    <span>Gems</span>
+                    <span>
+                      <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                    </span>
                   </div>
                 </div>
               </div>
