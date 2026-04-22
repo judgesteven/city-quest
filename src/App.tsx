@@ -275,6 +275,57 @@ const getCheckInEventId = (mission: GameLayerMission) => {
 const sortByPriority = (missions: GameLayerMission[]) =>
   [...missions].sort((a, b) => (a.priority ?? Number.MAX_SAFE_INTEGER) - (b.priority ?? Number.MAX_SAFE_INTEGER));
 
+const missionIdentityKey = (mission: GameLayerMission) =>
+  [
+    (mission.name ?? "").trim().toLowerCase(),
+    (mission.description ?? "").trim().toLowerCase(),
+    (mission.category ?? "").trim().toLowerCase(),
+    mission.location?.lat?.toFixed(6) ?? "",
+    mission.location?.lon?.toFixed(6) ?? "",
+    mission.reward?.points ?? mission.points ?? "",
+    mission.reward?.credits ?? mission.credits ?? "",
+    (mission.refreshPeriod ?? mission.period ?? "").trim().toLowerCase(),
+    (mission.expiresAt ?? mission.active?.to ?? "").trim().toLowerCase(),
+  ].join("|");
+
+const missionCompletenessScore = (mission: GameLayerMission) => {
+  let score = 0;
+  if (mission.description) score += 1;
+  if (mission.imgUrl) score += 1;
+  if (mission.objectives) score += 1;
+  if (mission.location?.lat !== undefined && mission.location?.lon !== undefined) score += 1;
+  if (mission.active?.from || mission.active?.to || mission.expiresAt) score += 1;
+  if ((mission.reward?.points ?? mission.points) !== undefined) score += 1;
+  if ((mission.reward?.credits ?? mission.credits) !== undefined) score += 1;
+  return score;
+};
+
+const dedupeMissions = (missions: GameLayerMission[]) => {
+  const unique = new Map<string, GameLayerMission>();
+  missions.forEach((mission) => {
+    const key = missionIdentityKey(mission);
+    const existing = unique.get(key);
+    if (!existing) {
+      unique.set(key, mission);
+      return;
+    }
+
+    const existingScore = missionCompletenessScore(existing);
+    const nextScore = missionCompletenessScore(mission);
+    if (nextScore > existingScore) {
+      unique.set(key, mission);
+      return;
+    }
+
+    const existingPriority = existing.priority ?? Number.MAX_SAFE_INTEGER;
+    const nextPriority = mission.priority ?? Number.MAX_SAFE_INTEGER;
+    if (nextScore === existingScore && nextPriority < existingPriority) {
+      unique.set(key, mission);
+    }
+  });
+  return Array.from(unique.values());
+};
+
 const parseIsoDate = (value?: string) => {
   if (!value) return null;
   const date = new Date(value);
@@ -785,9 +836,7 @@ export default function App() {
 
   const mergeMissions = (incoming: GameLayerMission[]) => {
     setMissions((current) => {
-      const merged = new Map<string, GameLayerMission>(current.map((mission) => [mission.id, mission]));
-      incoming.forEach((mission) => merged.set(mission.id, mission));
-      return Array.from(merged.values());
+      return dedupeMissions([...current, ...incoming]);
     });
   };
   const mergeRewards = (incoming: GameLayerPrize[]) => {
@@ -1492,7 +1541,10 @@ export default function App() {
     [missions]
   );
 
-  const myChallenges = useMemo(() => sortByPriority(eligibleChallenges), [eligibleChallenges]);
+  const myChallenges = useMemo(
+    () => sortByPriority(dedupeMissions(eligibleChallenges)),
+    [eligibleChallenges]
+  );
   const availableRewards = useMemo(() => rewards, [rewards]);
 
   const claimReward = useCallback(
