@@ -53,6 +53,7 @@ type MissionAnnotation = {
   lon: number;
   distanceMetres: number;
   isActionable: boolean;
+  category: Exclude<MarkerCategory, "all">;
 };
 type GameLayerPrize = {
   id: string;
@@ -75,15 +76,43 @@ type PrizeAnnotation = {
   lon: number;
   distanceMetres: number;
   isActionable: boolean;
+  category: Exclude<MarkerCategory, "all">;
 };
 type IconName = "home" | "mission" | "rewards" | "zap" | "gem";
+type MarkerCategory = "all" | "culture" | "food" | "nature" | "adventure" | "nightlife";
 
 const DEFAULT_CENTER: Coords = { latitude: 31.2001, longitude: 29.9187 };
 const GAME_LAYER_BASE_URL = "https://api.dev.gamelayer.co/api/v0";
-const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const STADIA_TILE_URL = "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png";
+const CARTO_DARK_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+const categoryColorMap: Record<Exclude<MarkerCategory, "all">, string> = {
+  culture: "#BF5AF2",
+  food: "#FF9F0A",
+  nature: "#32D74B",
+  adventure: "#FF453A",
+  nightlife: "#FF375F",
+};
+const markerFilterChips: { id: MarkerCategory; label: string; icon: string }[] = [
+  { id: "all", label: "All", icon: "🗺" },
+  { id: "culture", label: "Culture", icon: "🏛️" },
+  { id: "food", label: "Food", icon: "🍽️" },
+  { id: "nature", label: "Nature", icon: "🌿" },
+  { id: "adventure", label: "Adventure", icon: "⚡" },
+  { id: "nightlife", label: "Nightlife", icon: "🌙" },
+];
+const resolveMarkerCategory = (value?: string, tags?: string[]): Exclude<MarkerCategory, "all"> => {
+  const combined = `${value ?? ""} ${(tags ?? []).join(" ")}`.toLowerCase();
+  if (combined.includes("cult")) return "culture";
+  if (combined.includes("food") || combined.includes("rest")) return "food";
+  if (combined.includes("nature") || combined.includes("park")) return "nature";
+  if (combined.includes("advent") || combined.includes("sport")) return "adventure";
+  if (combined.includes("night") || combined.includes("club") || combined.includes("bar")) return "nightlife";
+  return "adventure";
+};
 const TILE_LAYER_OPTIONS: L.TileLayerOptions = {
   subdomains: "abc",
   maxZoom: 19,
+  detectRetina: true,
   // Keep more tiles around the viewport to reduce visible loading while panning.
   keepBuffer: 8,
   updateWhenIdle: false,
@@ -783,11 +812,15 @@ export default function App() {
   const [checkInError, setCheckInError] = useState<string | null>(null);
   const [rewardMessage, setRewardMessage] = useState<string | null>(null);
   const [rewardError, setRewardError] = useState<string | null>(null);
+  const [activeMapCategory, setActiveMapCategory] = useState<MarkerCategory>("all");
+  const [visitedMissionIds, setVisitedMissionIds] = useState<Set<string>>(new Set());
+  const [visitedRewardIds, setVisitedRewardIds] = useState<Set<string>>(new Set());
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const apiKey = import.meta.env.VITE_CITY_QUEST_API_KEY as string | undefined;
   const accountName = import.meta.env.VITE_CITY_QUEST_ACCOUNT_ID as string | undefined;
   const playerId = import.meta.env.VITE_CITY_QUEST_PLAYER_ID as string | undefined;
+  const stadiaMapsApiKey = import.meta.env.VITE_STADIA_MAPS_API_KEY as string | undefined;
   const hasCredentials = Boolean(apiKey && accountName && playerId);
 
   const buildUrl = useCallback(
@@ -990,7 +1023,10 @@ export default function App() {
       attributionControl: false,
     }).setView([DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude], 15);
 
-    L.tileLayer(OSM_TILE_URL, TILE_LAYER_OPTIONS).addTo(map);
+    const tileUrl = stadiaMapsApiKey
+      ? `${STADIA_TILE_URL}?api_key=${encodeURIComponent(stadiaMapsApiKey)}`
+      : CARTO_DARK_TILE_URL;
+    L.tileLayer(tileUrl, TILE_LAYER_OPTIONS).addTo(map);
 
     missionLayerRef.current = L.layerGroup().addTo(map);
     map.on("moveend", () => {
@@ -1006,7 +1042,7 @@ export default function App() {
       mapRef.current = null;
       missionLayerRef.current = null;
     };
-  }, []);
+  }, [stadiaMapsApiKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1125,8 +1161,9 @@ export default function App() {
         const isActionable =
           (mission.location?.actionableDistance ?? 0) > 0 &&
           distanceMetres <= (mission.location?.actionableDistance ?? 0);
+        const category = resolveMarkerCategory(mission.category, mission.tags);
 
-        return { mission, lat, lon, distanceMetres, isActionable };
+        return { mission, lat, lon, distanceMetres, isActionable, category };
       })
       .filter((entry): entry is MissionAnnotation => entry !== null);
   }, [missions, userCoords, visibleBounds]);
@@ -1150,11 +1187,22 @@ export default function App() {
         const isActionable =
           (reward.location?.actionableDistance ?? 0) > 0 &&
           distanceMetres <= (reward.location?.actionableDistance ?? 0);
+        const category = resolveMarkerCategory(undefined, reward.tags);
 
-        return { prize: reward, lat, lon, distanceMetres, isActionable };
+        return { prize: reward, lat, lon, distanceMetres, isActionable, category };
       })
       .filter((entry): entry is PrizeAnnotation => entry !== null);
   }, [rewards, userCoords, visibleBounds]);
+
+  const filteredLocationAnnotations = useMemo(() => {
+    if (activeMapCategory === "all") return locationAnnotations;
+    return locationAnnotations.filter((annotation) => annotation.category === activeMapCategory);
+  }, [activeMapCategory, locationAnnotations]);
+
+  const filteredRewardAnnotations = useMemo(() => {
+    if (activeMapCategory === "all") return rewardAnnotations;
+    return rewardAnnotations.filter((annotation) => annotation.category === activeMapCategory);
+  }, [activeMapCategory, rewardAnnotations]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1181,9 +1229,12 @@ export default function App() {
 
     if (homeMapMode === "Challenges") {
       const visibleIds = new Set<string>();
-      locationAnnotations.forEach((annotation) => {
+      filteredLocationAnnotations.forEach((annotation) => {
         const markerId = annotation.mission.id;
         const markerClass: "actionable" | "viewable" = annotation.isActionable ? "actionable" : "viewable";
+        const markerColor = categoryColorMap[annotation.category];
+        const visited = visitedMissionIds.has(annotation.mission.id);
+        const markerHtml = `<div class="mission-pin ${markerClass}${visited ? " visited" : ""}" style="--marker-color:${markerColor};"><span class="mission-pin-outer"></span><span class="mission-pin-inner"></span><span class="mission-pin-core">${visited ? "✓" : ""}</span></div>`;
         visibleIds.add(markerId);
 
         const existing = mapMarkersRef.current.get(markerId);
@@ -1191,9 +1242,9 @@ export default function App() {
           const marker = L.marker([annotation.lat, annotation.lon], {
             icon: L.divIcon({
               className: "mission-pin-wrapper",
-              html: `<div class="mission-pin ${markerClass}"><img src="/assets/mission.png" alt="" class="mission-pin-icon" /></div>`,
-              iconSize: [35, 35],
-              iconAnchor: [18, 18],
+              html: markerHtml,
+              iconSize: [54, 54],
+              iconAnchor: [27, 27],
             }),
           });
           marker.on("click", () => {
@@ -1213,12 +1264,21 @@ export default function App() {
           existing.setIcon(
             L.divIcon({
               className: "mission-pin-wrapper",
-              html: `<div class="mission-pin ${markerClass}"><img src="/assets/mission.png" alt="" class="mission-pin-icon" /></div>`,
-              iconSize: [35, 35],
-              iconAnchor: [18, 18],
+              html: markerHtml,
+              iconSize: [54, 54],
+              iconAnchor: [27, 27],
             })
           );
           mapMarkerClassRef.current.set(markerId, markerClass);
+        } else {
+          existing.setIcon(
+            L.divIcon({
+              className: "mission-pin-wrapper",
+              html: markerHtml,
+              iconSize: [54, 54],
+              iconAnchor: [27, 27],
+            })
+          );
         }
       });
 
@@ -1233,9 +1293,12 @@ export default function App() {
     }
 
     const visibleIds = new Set<string>();
-    rewardAnnotations.forEach((annotation) => {
+    filteredRewardAnnotations.forEach((annotation) => {
       const markerId = annotation.prize.id;
       const markerClass: "actionable" | "viewable" = annotation.isActionable ? "actionable" : "viewable";
+      const markerColor = categoryColorMap[annotation.category];
+      const visited = visitedRewardIds.has(annotation.prize.id);
+      const markerHtml = `<div class="mission-pin ${markerClass}${visited ? " visited" : ""}" style="--marker-color:${markerColor};"><span class="mission-pin-outer"></span><span class="mission-pin-inner"></span><span class="mission-pin-core">${visited ? "✓" : ""}</span></div>`;
       visibleIds.add(markerId);
 
       const existing = mapMarkersRef.current.get(markerId);
@@ -1243,9 +1306,9 @@ export default function App() {
         const marker = L.marker([annotation.lat, annotation.lon], {
           icon: L.divIcon({
             className: "mission-pin-wrapper",
-            html: `<div class="mission-pin ${markerClass}"><img src="/assets/rewards.png" alt="" class="mission-pin-icon" /></div>`,
-            iconSize: [35, 35],
-            iconAnchor: [18, 18],
+            html: markerHtml,
+            iconSize: [54, 54],
+            iconAnchor: [27, 27],
           }),
         });
         marker.on("click", () => {
@@ -1265,12 +1328,21 @@ export default function App() {
         existing.setIcon(
           L.divIcon({
             className: "mission-pin-wrapper",
-            html: `<div class="mission-pin ${markerClass}"><img src="/assets/rewards.png" alt="" class="mission-pin-icon" /></div>`,
-            iconSize: [35, 35],
-            iconAnchor: [18, 18],
+            html: markerHtml,
+            iconSize: [54, 54],
+            iconAnchor: [27, 27],
           })
         );
         mapMarkerClassRef.current.set(markerId, markerClass);
+      } else {
+        existing.setIcon(
+          L.divIcon({
+            className: "mission-pin-wrapper",
+            html: markerHtml,
+            iconSize: [54, 54],
+            iconAnchor: [27, 27],
+          })
+        );
       }
     });
 
@@ -1281,7 +1353,14 @@ export default function App() {
         mapMarkerClassRef.current.delete(markerId);
       }
     });
-  }, [currentPage, homeMapMode, locationAnnotations, rewardAnnotations]);
+  }, [
+    currentPage,
+    filteredLocationAnnotations,
+    filteredRewardAnnotations,
+    homeMapMode,
+    visitedMissionIds,
+    visitedRewardIds,
+  ]);
 
   useEffect(() => {
     if (!hasCredentials) {
@@ -1490,6 +1569,11 @@ export default function App() {
       }
 
       setCheckInMessage("Check-in completed.");
+      setVisitedMissionIds((current) => {
+        const next = new Set(current);
+        next.add(selectedMissionDetail.id);
+        return next;
+      });
       await refreshProfileData(true);
 
       const now = Date.now();
@@ -1515,6 +1599,11 @@ export default function App() {
     setRewardMessage(null);
     const success = await claimReward(selectedRewardDetail, true);
     if (success) {
+      setVisitedRewardIds((current) => {
+        const next = new Set(current);
+        next.add(selectedRewardDetail.id);
+        return next;
+      });
       setRewardMessage("Reward collected.");
       rewardCloseTimerRef.current = window.setTimeout(() => {
         closeRewardModal();
@@ -1531,6 +1620,7 @@ export default function App() {
   const displayGems = player?.credits ?? 0;
   const displayLevel = player?.level?.ordinal ?? 0;
   const displayTeamName = teamName ?? "No Team";
+  const collectedCardsCount = redeemedRewards.length;
 
   const eligibleChallenges = useMemo(
     () =>
@@ -1601,39 +1691,56 @@ export default function App() {
       <div className="map-bg" ref={mapNodeRef} />
       {currentPage !== "Home" ? <div className="challenge-bg" /> : null}
       <div className="overlay">
-        <p className="powered-by">POWERED BY GAMELAYER</p>
         <header className="profile-card">
-          <div className="avatar-wrap">
-            <div className="avatar">
-              {displayImage ? (
-                <img src={displayImage} alt={displayName} className="avatar-image" />
-              ) : (
-                "🧔"
-              )}
+          <div className="profile-card-top">
+            <div className="avatar-wrap">
+              <div className="avatar">
+                {displayImage ? (
+                  <img src={displayImage} alt={displayName} className="avatar-image" />
+                ) : (
+                  "🧔"
+                )}
+              </div>
+              <div className="collection-badge">{collectedCardsCount}</div>
+              <div className="level-badge">{displayLevel}</div>
             </div>
-            <div className="level-badge">{displayLevel}</div>
-          </div>
-          <div className="profile-main">
-            <div className="name">{displayName}</div>
-            <div className="squad">{displayTeamName}</div>
-            {isProfileLoading ? <div className="profile-hint">Loading profile...</div> : null}
-            {profileError ? <div className="profile-error">{profileError}</div> : null}
-          </div>
-          <div className="stats">
-            <div className="stat-badge xp">
-              <span className="stat-value">{displayPoints}</span>
-              <span className="stat-meta">
-                <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
-              </span>
+            <div className="profile-main">
+              <div className="name">{displayName}</div>
+              <div className="squad">{displayTeamName}</div>
+              {isProfileLoading ? <div className="profile-hint">Loading profile...</div> : null}
+              {profileError ? <div className="profile-error">{profileError}</div> : null}
             </div>
-            <div className="stat-badge gems">
-              <span className="stat-value">{displayGems}</span>
-              <span className="stat-meta">
-                <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
-              </span>
+            <div className="stats">
+              <div className="stat-badge xp">
+                <span className="stat-value">{displayPoints}</span>
+                <span className="stat-meta">
+                  <AppIcon name="zap" label="XP" fallback="⚡" className="inline-badge-icon" /> XP
+                </span>
+              </div>
+              <div className="stat-badge gems">
+                <span className="stat-value">{displayGems}</span>
+                <span className="stat-meta">
+                  <AppIcon name="gem" label="Gems" fallback="💎" className="inline-badge-icon" /> Gems
+                </span>
+              </div>
             </div>
           </div>
+          <p className="powered-by">Powered by GameLayer</p>
         </header>
+        {currentPage === "Home" ? (
+          <div className="category-chip-row">
+            {markerFilterChips.map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                className={activeMapCategory === chip.id ? `category-chip active ${chip.id}` : "category-chip"}
+                onClick={() => setActiveMapCategory(chip.id)}
+              >
+                <span>{chip.icon}</span> {chip.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <div
           className={
             currentPage === "Home" ? "page-content page-content--passthrough" : "page-content"
@@ -1718,6 +1825,7 @@ export default function App() {
       {selectedMission ? (
         <div className="mission-modal-backdrop" onClick={closeMissionModal}>
           <section className="mission-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="sheet-grab-handle" />
             <button type="button" className="mission-modal-close" onClick={closeMissionModal}>
               ✕
             </button>
@@ -1795,6 +1903,7 @@ export default function App() {
       {selectedReward ? (
         <div className="mission-modal-backdrop" onClick={closeRewardModal}>
           <section className="mission-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="sheet-grab-handle" />
             <button type="button" className="mission-modal-close" onClick={closeRewardModal}>
               ✕
             </button>

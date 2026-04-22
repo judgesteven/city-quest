@@ -1,10 +1,22 @@
 :root {
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
   background: #0d111b;
-  color: #f8fafc;
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --glass-blur: blur(8px);
+  color: #fff;
+  --blue: #007aff;
+  --amber: #ff9f0a;
+  --green: #32d74b;
+  --purple: #bf5af2;
+  --red: #ff453a;
+  --pink: #ff375f;
+  --glass: rgba(12, 18, 38, 0.88);
+  --glass-dark: rgba(8, 12, 28, 0.96);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.55);
+  --text-3: rgba(255, 255, 255, 0.3);
+  --glass-bg: rgba(0, 0, 0, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(20px);
 }
 
 * {
@@ -54,10 +66,12 @@ body {
 .profile-card,
 .page-content,
 .segmented,
+.category-chip-row,
 .mission-strip,
 .bottom-ribbon,
 .ribbon-tab,
 .segment,
+.category-chip,
 .tab {
   pointer-events: auto;
 }
@@ -81,15 +95,14 @@ body {
 }
 
 .powered-by {
-  margin: 0 auto 6px;
-  margin-top: env(safe-area-inset-top, 0);
-  width: min(430px, 96%);
+  margin: 6px 0 0;
   text-align: center;
-  color: rgba(100, 116, 139, 0.98);
-  font-size: 10px;
-  font-weight: 600;
+  color: var(--text-3);
+  font-size: 9px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  opacity: 0.3;
 }
 
 .page-content {
@@ -111,14 +124,24 @@ body {
 
 .profile-card {
   margin-top: 0;
+  width: min(470px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 22px;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 18, 38, 0.68);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.4);
+  padding: 12px 16px 10px;
+}
+
+.profile-card-top {
   display: flex;
   align-items: center;
   gap: 16px;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.82);
-  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.4);
-  padding: 12px 14px;
+  width: 100%;
 }
 
 .avatar {
@@ -163,6 +186,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.collection-badge {
+  position: absolute;
+  left: -5px;
+  bottom: -5px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  padding: 0 6px;
+  background: var(--blue);
+  border: 2px solid rgba(0, 0, 0, 0.85);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .profile-main {
@@ -211,10 +252,10 @@ body {
 }
 
 .stat-badge {
-  width: 52px;
+  width: 58px;
   height: 52px;
   border-radius: 12px;
-  padding: 6px 8px;
+  padding: 6px 9px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -223,11 +264,11 @@ body {
 }
 
 .stat-badge.xp {
-  background: rgba(255, 158, 69, 0.12);
+  background: rgba(255, 159, 10, 0.15);
 }
 
 .stat-badge.gems {
-  background: rgba(42, 195, 255, 0.12);
+  background: rgba(0, 122, 255, 0.15);
 }
 
 .stat-badge .stat-value {
@@ -238,19 +279,19 @@ body {
 }
 
 .stat-badge.xp .stat-value {
-  color: #ff9e45;
+  color: #ff9f0a;
 }
 
 .stat-badge.gems .stat-value {
-  color: #2ac3ff;
+  color: #007aff;
 }
 
 .stat-badge.xp .stat-meta {
-  color: #ff9e45;
+  color: #ff9f0a;
 }
 
 .stat-badge.gems .stat-meta {
-  color: #2ac3ff;
+  color: #007aff;
 }
 
 .stat-meta {
@@ -266,33 +307,95 @@ body {
 }
 
 .segmented {
-  margin-top: 14px;
-  width: 100%;
-  max-width: 460px;
-  align-self: center;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  min-width: 230px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   border-radius: 999px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.55);
   padding: 4px;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1205;
 }
 
 .segment {
-  height: 42px;
+  height: 36px;
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: rgba(100, 116, 139, 0.98);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   font-weight: 600;
+  padding: 8px 20px;
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
 }
 
 .segment.active {
-  background: rgba(0, 0, 0, 0.9);
+  background: #007aff;
   color: #fff;
+}
+
+.category-chip-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100px;
+  z-index: 1400;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.category-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.category-chip {
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.category-chip.active {
+  color: #fff;
+  border-color: transparent;
+}
+
+.category-chip.active.all {
+  background: var(--blue);
+}
+.category-chip.active.culture {
+  background: var(--purple);
+}
+.category-chip.active.food {
+  background: var(--amber);
+}
+.category-chip.active.nature {
+  background: var(--green);
+}
+.category-chip.active.adventure {
+  background: var(--red);
+}
+.category-chip.active.nightlife {
+  background: var(--pink);
 }
 
 .bottom-ribbon {
@@ -553,6 +656,7 @@ body {
   font-size: 14px;
   font-weight: 700;
   min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .reward-stock {
@@ -640,6 +744,7 @@ body {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .test-challenge-time-pill {
@@ -727,45 +832,66 @@ body {
 }
 
 .mission-pin {
-  width: 35px;
-  height: 35px;
+  width: 54px;
+  height: 54px;
   border-radius: 999px;
   position: relative;
   overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  font-size: 16px;
+  --active-marker-color: var(--marker-color, var(--pink));
 }
 
-.mission-pin-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  display: block;
-  filter: brightness(0) invert(1);
+.mission-pin.visited {
+  --active-marker-color: var(--green);
 }
 
-.mission-pin.viewable {
-  background: #ff4db8;
+.mission-pin-outer {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--active-marker-color) 18%, transparent);
+  border: 2px solid color-mix(in srgb, var(--active-marker-color) 45%, transparent);
+  position: absolute;
+  inset: 0;
 }
 
-.mission-pin.actionable {
-  background: #ff4db8;
-  animation: mission-pulse 1.2s ease-in-out infinite;
+.mission-pin-inner {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--active-marker-color) 35%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--active-marker-color) 65%, transparent);
+  position: absolute;
 }
 
-@keyframes mission-pulse {
+.mission-pin-core {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--active-marker-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.mission-pin.viewable .mission-pin-outer {
+  animation: marker-pulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes marker-pulse {
   0% {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 77, 184, 0.6);
-  }
-  70% {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 12px rgba(255, 77, 184, 0);
+    opacity: 1;
   }
   100% {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 77, 184, 0);
+    opacity: 0.6;
   }
 }
 
@@ -795,26 +921,32 @@ body {
   position: fixed;
   inset: 0;
   z-index: 1500;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
 }
 
 .mission-modal {
-  width: min(360px, 95vw);
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #121722;
-  padding: 14px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  width: min(460px, 100vw);
+  max-height: 65dvh;
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 18, 38, 0.96);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  padding: 18px 16px calc(24px + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -8px 48px rgba(0, 0, 0, 0.55);
   position: relative;
+  transform: translateY(0);
+  transition: transform 0.36s cubic-bezier(0.32, 1.12, 0.46, 1);
 }
 
 .mission-modal-close {
   position: absolute;
-  top: 8px;
+  top: 16px;
   right: 8px;
   border: none;
   border-radius: 50%;
@@ -823,6 +955,14 @@ body {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
   font-size: 14px;
+}
+
+.sheet-grab-handle {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 auto 10px;
 }
 
 .mission-modal-image {
@@ -856,12 +996,14 @@ body {
 .mission-modal h3 {
   margin: 12px 0 6px;
   font-size: 20px;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .mission-modal-description {
   margin: 0 0 10px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .mission-modal-stats {
@@ -959,16 +1101,16 @@ body {
   margin-top: 12px;
   width: 100%;
   border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  background: #ff8b38;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #007aff;
   color: #fff;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .mission-checkin-btn.actionable {
-  background: #25b45a;
+  background: #007aff;
 }
 
 .mission-checkin-btn:disabled {
