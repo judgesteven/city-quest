@@ -81,6 +81,14 @@ type IconName = "home" | "mission" | "rewards" | "zap" | "gem";
 const DEFAULT_CENTER: Coords = { latitude: 31.2001, longitude: 29.9187 };
 const GAME_LAYER_BASE_URL = "https://api.dev.gamelayer.co/api/v0";
 const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_LAYER_OPTIONS: L.TileLayerOptions = {
+  subdomains: "abc",
+  maxZoom: 19,
+  // Keep more tiles around the viewport to reduce visible loading while panning.
+  keepBuffer: 8,
+  updateWhenIdle: false,
+  updateWhenZooming: true,
+};
 const ICON_PATHS: Record<IconName, string> = {
   home: "/assets/home.png",
   mission: "/assets/mission.png",
@@ -694,6 +702,8 @@ export default function App() {
   const lastLocationFetchRef = useRef<number>(0);
   const checkInCloseTimerRef = useRef<number | null>(null);
   const rewardCloseTimerRef = useRef<number | null>(null);
+  const previousPageRef = useRef<"Home" | "Challenges" | "Rewards" | null>(null);
+  const previousHomeMapModeRef = useRef<"Challenges" | "Rewards" | null>(null);
   const [currentPage, setCurrentPage] = useState<"Home" | "Challenges" | "Rewards">("Home");
   const [homeMapMode, setHomeMapMode] = useState<"Challenges" | "Rewards">("Challenges");
   const [player, setPlayer] = useState<GameLayerPlayer | null>(null);
@@ -810,16 +820,19 @@ export default function App() {
     }
   }, []);
 
-  const refreshProfileData = useCallback(async () => {
+  const refreshProfileData = useCallback(async (silent = false) => {
     if (!hasCredentials) return;
 
-    setIsProfileLoading(true);
-    setProfileError(null);
+    if (!silent) {
+      setIsProfileLoading(true);
+      setProfileError(null);
+    }
     try {
       const playerData = await fetchJson<GameLayerPlayer>(
         buildUrl(`players/${encodeURIComponent(playerId ?? "")}`)
       );
       setPlayer(playerData);
+      setProfileError(null);
 
       if (playerData.team) {
         try {
@@ -839,11 +852,15 @@ export default function App() {
         setTeamName(null);
       }
     } catch (error) {
-      setProfileError(error instanceof Error ? error.message : "Failed to load player profile.");
-      setPlayer(null);
-      setTeamName(null);
+      if (!silent) {
+        setProfileError(error instanceof Error ? error.message : "Failed to load player profile.");
+        setPlayer(null);
+        setTeamName(null);
+      }
     } finally {
-      setIsProfileLoading(false);
+      if (!silent) {
+        setIsProfileLoading(false);
+      }
     }
   }, [buildUrl, fetchJson, hasCredentials, playerId]);
 
@@ -924,10 +941,7 @@ export default function App() {
       attributionControl: false,
     }).setView([DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude], 15);
 
-    L.tileLayer(OSM_TILE_URL, {
-      subdomains: "abc",
-      maxZoom: 19,
-    }).addTo(map);
+    L.tileLayer(OSM_TILE_URL, TILE_LAYER_OPTIONS).addTo(map);
 
     missionLayerRef.current = L.layerGroup().addTo(map);
     map.on("moveend", () => {
@@ -1231,6 +1245,28 @@ export default function App() {
   }, [hasCredentials, refreshProfileData]);
 
   useEffect(() => {
+    if (!hasCredentials) return;
+    if (previousPageRef.current === null) {
+      previousPageRef.current = currentPage;
+      return;
+    }
+    if (previousPageRef.current === currentPage) return;
+    previousPageRef.current = currentPage;
+    void refreshProfileData(true);
+  }, [currentPage, hasCredentials, refreshProfileData]);
+
+  useEffect(() => {
+    if (!hasCredentials || currentPage !== "Home") return;
+    if (previousHomeMapModeRef.current === null) {
+      previousHomeMapModeRef.current = homeMapMode;
+      return;
+    }
+    if (previousHomeMapModeRef.current === homeMapMode) return;
+    previousHomeMapModeRef.current = homeMapMode;
+    void refreshProfileData(true);
+  }, [currentPage, hasCredentials, homeMapMode, refreshProfileData]);
+
+  useEffect(() => {
     if (!hasCredentials) {
       return;
     }
@@ -1405,7 +1441,7 @@ export default function App() {
       }
 
       setCheckInMessage("Check-in completed.");
-      await refreshProfileData();
+      await refreshProfileData(true);
 
       const now = Date.now();
       if (now - lastLocationFetchRef.current > 1500 && userCoords) {
@@ -1486,7 +1522,7 @@ export default function App() {
           throw new Error(`Claim failed (${response.status})`);
         }
         await Promise.all([
-          refreshProfileData(),
+          refreshProfileData(true),
           refreshRewardsData(userCoords ?? undefined, true),
           refreshRedeemedRewards(),
         ]);
